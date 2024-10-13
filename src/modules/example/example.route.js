@@ -27,7 +27,6 @@ const role = require("../../middleware/role");
  *          description: auto generated date time
  */
 
-
 /**
  * @swagger
  * paths:
@@ -57,8 +56,7 @@ const role = require("../../middleware/role");
  *              schema:
  *                $ref: '#/components/schemas/Example'
  */
-route.get("/example", authentication, role(["admin"]), exampleController.index);
-
+route.get("/example", exampleController.index);
 
 /**
  * @swagger
@@ -86,8 +84,12 @@ route.get("/example", authentication, role(["admin"]), exampleController.index);
  *              schema:
  *                $ref: '#/components/schemas/Example'
  */
-route.post("/example", authentication, role(["admin"]), exampleValidation.storeschema, validation, exampleController.store);
-
+route.post(
+  "/example",
+  exampleValidation.storeschema,
+  validation,
+  exampleController.store
+);
 
 /**
  * @swagger
@@ -110,8 +112,7 @@ route.post("/example", authentication, role(["admin"]), exampleValidation.stores
  *               schema:
  *                 $ref: '#/components/schemas/Example'
  */
-route.get("/example/:id", authentication, role(["admin"]), exampleController.show);
-
+route.get("/example/:id", exampleController.show);
 
 /**
  * @swagger
@@ -144,8 +145,12 @@ route.get("/example/:id", authentication, role(["admin"]), exampleController.sho
  *              schema:
  *                $ref: '#/components/schemas/Example'
  */
-route.put("/example/:id", authentication, role(["admin"]), exampleValidation.updatechema, validation, exampleController.update);
-
+route.put(
+  "/example/:id",
+  exampleValidation.updatechema,
+  validation,
+  exampleController.update
+);
 
 /**
  * @swagger
@@ -171,6 +176,6 @@ route.put("/example/:id", authentication, role(["admin"]), exampleValidation.upd
  *               schema:
  *                 $ref: '#/components/schemas/Example'
  */
-route.delete("/example/:id", authentication, role(["admin"]), exampleController.delete);
+route.delete("/example/:id", exampleController.delete);
 
 module.exports = route;

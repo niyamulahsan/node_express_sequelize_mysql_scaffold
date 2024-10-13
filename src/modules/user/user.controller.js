@@ -1,4 +1,4 @@
-const { User, Role } = require('../../models');
+const { User, Role } = require("../../models");
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 const bcrypt = require("bcrypt");
@@ -16,7 +16,6 @@ user.index = async (req, res, next) => {
   //     limit,
   //   };
   // };
-
 
   // model.findAll(
   //   paginate(
@@ -41,8 +40,8 @@ user.index = async (req, res, next) => {
     let whereSearch;
     whereSearch = {
       [Op.and]: [
-        Sequelize.where(Sequelize.fn('lower', Sequelize.col('Role.name')), {
-          [Op.notIn]: ['admin']
+        Sequelize.where(Sequelize.fn("lower", Sequelize.col("Role.name")), {
+          [Op.notIn]: ["admin"],
         }),
       ],
     };
@@ -50,18 +49,18 @@ user.index = async (req, res, next) => {
     if (search) {
       whereSearch = {
         [Op.and]: [
-          Sequelize.where(Sequelize.fn('lower', Sequelize.col('Role.name')), {
-            [Op.notIn]: ['admin']
+          Sequelize.where(Sequelize.fn("lower", Sequelize.col("Role.name")), {
+            [Op.notIn]: ["admin"],
           }),
         ],
         [Op.or]: [
-          Sequelize.where(Sequelize.fn('lower', Sequelize.col('User.name')), {
-            [Op.like]: `%${search.trim().toLowerCase()}%`
+          Sequelize.where(Sequelize.fn("lower", Sequelize.col("User.name")), {
+            [Op.like]: `%${search.trim().toLowerCase()}%`,
           }),
-          Sequelize.where(Sequelize.fn('lower', Sequelize.col('User.email')), {
-            [Op.like]: `%${search.trim().toLowerCase()}%`
-          })
-        ]
+          Sequelize.where(Sequelize.fn("lower", Sequelize.col("User.email")), {
+            [Op.like]: `%${search.trim().toLowerCase()}%`,
+          }),
+        ],
       };
     }
 
@@ -71,7 +70,7 @@ user.index = async (req, res, next) => {
       limit: size,
       offset: offset,
       order: [["id", "DESC"]],
-      where: whereSearch
+      where: whereSearch,
     });
 
     return res.status(200).json({
@@ -81,7 +80,7 @@ user.index = async (req, res, next) => {
       from: usersQuery.length > 0 ? Number(offset + 1) : null,
       to: usersQuery.length > 0 ? Number(offset + usersQuery.length) : null,
       last_page: Number(pages),
-      result: usersQuery
+      result: usersQuery,
     });
   } catch (err) {
     next(err);
@@ -95,7 +94,7 @@ user.store = async (req, res, next) => {
       email: req.body.email,
       password: await bcrypt.hash(req.body.password, 10),
       confirm_password: req.body.confirm_password,
-      role_id: req.body.role_id
+      role_id: req.body.role_id,
     };
 
     data.forget_password = req.body.password;
@@ -105,7 +104,7 @@ user.store = async (req, res, next) => {
 
     await User.create(data);
 
-    return res.json({ "msg": "User created successfully" });
+    return res.json({ msg: "User created successfully" });
   } catch (err) {
     next(err);
   }
@@ -114,10 +113,10 @@ user.store = async (req, res, next) => {
 user.show = async (req, res, next) => {
   try {
     const user = await User.findOne({
-      where: { id: req.params.id }
+      where: { id: req.params.id },
     });
 
-    return res.json({ "user": user });
+    return res.json({ user: user });
   } catch (err) {
     next(err);
   }
@@ -130,27 +129,30 @@ user.update = async (req, res, next) => {
       email: req.body.email,
       password: await bcrypt.hash(req.body.password, 10),
       confirm_password: req.body.confirm_password,
-      role_id: req.body.role_id
+      role_id: req.body.role_id,
     };
 
     // check who is logged in
-    const auth = await User.findOne({ where: { email: req.email }, include: [{ model: Role, as: "role" }] });
+    const auth = await User.findOne({
+      where: { email: req.email },
+      include: [{ model: Role, as: "role" }],
+    });
 
     if (req.body.password == "" || req.body.password == null) {
       delete data["password"];
-      delete data['forget_password'];
+      delete data["forget_password"];
     } else {
-      if (['user'].includes(auth.role.name)) {
-        delete data['role_id'];
+      if (["user"].includes(auth.role.name)) {
+        delete data["role_id"];
       }
-      delete data['email'];
+      delete data["email"];
       delete data["confirm_password"];
       data.forget_password = req.body.password;
     }
 
     await User.update(data, { where: { id: req.params.id } });
 
-    return res.json({ "msg": "User updated successfully" });
+    return res.json({ msg: "User updated successfully" });
   } catch (err) {
     next(err);
   }
@@ -160,7 +162,7 @@ user.delete = async (req, res, next) => {
   try {
     const idsToDelete = req.params.id.split(",");
     await User.destroy({ where: { id: { [Op.in]: idsToDelete } } });
-    return res.json({ "msg": "User deleted successfully" });
+    return res.json({ msg: "User deleted successfully" });
   } catch (err) {
     next(err);
   }
@@ -168,7 +170,10 @@ user.delete = async (req, res, next) => {
 
 user.status = async (req, res, next) => {
   try {
-    await User.update({ status: req.body.status }, { where: { id: req.params.id } });
+    await User.update(
+      { status: req.body.status },
+      { where: { id: req.params.id } }
+    );
 
     return res.json({ msg: "Status updated" });
   } catch (err) {
