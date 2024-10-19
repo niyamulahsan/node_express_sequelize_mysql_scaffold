@@ -5,7 +5,7 @@ const options = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "Node Express Scaffold",
+      title: "Node Express Sequelize MySQL Scaffold",
       version: "1.0.0",
       description: "Scaffold server end",
       contact: {
