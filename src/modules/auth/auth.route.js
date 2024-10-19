@@ -66,7 +66,12 @@ const { validation } = require("../../middleware/errorhandler");
  *              schema:
  *                $ref: '#/components/schemas/Auth'
  */
-route.post("/register", authValidation.storeschema, validation, authController.register);
+route.post(
+  "/register",
+  authValidation.storeschema,
+  validation,
+  authController.register
+);
 
 /**
  * @swagger
@@ -128,5 +133,71 @@ route.delete("/logout", authentication, authController.logout);
  *                $ref: '#/components/schemas/Auth'
  */
 route.get("/me", authentication, authController.me);
+
+/**
+ * @swagger
+ * paths:
+ *  /api/forgetpassword:
+ *    post:
+ *      operationId: forgetpassword_user
+ *      summary: forgetpassword user
+ *      tags: [Auth]
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                email:
+ *                  type: string
+ *                  example: "jhondoe@mail.com"
+ *                  required: true
+ *      responses:
+ *        200:
+ *          content:
+ *            application/json:
+ *              schema:
+ *                $ref: '#/components/schemas/Auth'
+ */
+route.post("/forgetpassword", authValidation.forgetschema, validation, authController.forgetPassword);
+
+/**
+ * @swagger
+ * paths:
+ *  /api/resetpassword/{token}:
+ *    patch:
+ *      operationId: resetpassword_user
+ *      summary: resetpassword user
+ *      tags: [Auth]
+ *      parameters:
+ *        - in: path
+ *          name: token
+ *          required: true
+ *          schema:
+ *            type: string
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                password:
+ *                  type: string
+ *                  example: "123"
+ *                  required: true
+ *                confirm_password:
+ *                  type: string
+ *                  example: "123"
+ *                  required: true
+ *      responses:
+ *        200:
+ *          content:
+ *            application/json:
+ *              schema:
+ *                $ref: '#/components/schemas/Auth'
+ */
+route.patch("/resetpassword/:token", authValidation.resetschema, validation, authController.resetPassword);
 
 module.exports = route;

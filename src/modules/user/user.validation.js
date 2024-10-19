@@ -20,7 +20,15 @@ user.storeschema = [
     return Promise.resolve();
   }).withMessage("Password not matched!"),
   check("forget_password").optional({ nullable: true }),
-  check("role_id").notEmpty().withMessage("Role required"),
+  check("role_id").notEmpty().withMessage("Role required").bail().custom(async (value, { req, res }) => {
+    const role = await Role.findOne({ where: { id: value } });
+
+    if (["admin"].includes(role.name)) {
+      return Promise.reject("Can't create admin user");
+    }
+
+    return Promise.resolve();
+  }),
 ];
 
 user.updatechema = [
@@ -35,38 +43,36 @@ user.updatechema = [
   check("forget_password").optional({ nullable: true }),
   check("role_id").custom(async (value, { req, res }) => {
     // check who is logged in
-    const auth = await User.findOne({
-      where: { email: req.email }, include: [{ model: Role, as: "role" }]
-    });
-    if (['admin'].includes(auth.role.name)) {
-      return Promise.reject('Role required');
+    const auth = await User.findOne({ where: { email: req.email }, include: [{ model: Role, as: "role" }] });
+
+    if (["admin"].includes(auth.role.name)) {
+      return Promise.reject("Role required");
     }
+
+    const role = await Role.findOne({ where: { id: value } });
+
+    if (['admin'].includes(role.name)) {
+      return Promise.reject("Can't update with admin role");
+    }
+
     return Promise.resolve();
   }),
 ];
 
 user.statusschema = [
-  check("status").notEmpty().withMessage("Status required").bail().isIn(['0', '1']).withMessage('Status will be 0 or 1').bail().custom(async (value, { req, res }) => {
-    const auth = await User.findOne({ // check who logged in
-      where: { email: req.email },
-      include: [
-        { model: Role, as: "role" }
-      ]
-    });
+  check("status").notEmpty().withMessage("Status required").bail().isIn(["0", "1"]).withMessage("Status will be 0 or 1").bail().custom(async (value, { req, res }) => {
+    const auth = await User.findOne({ where: { email: req.email }, include: [{ model: Role, as: "role" }] });
 
-    const user = await User.findOne({ // update user status
-      where: { id: req.params.id },
-      include: [
-        { model: Role, as: "role" }
-      ]
-    });
+    const user = await User.findOne({ where: { id: req.params.id }, include: [{ model: Role, as: "role" }] });
 
-    if (['admin'].includes(auth.role.name)) {
-      return ['admin'].includes(user.role.name) && Promise.reject("Can't update");
+    if (["admin"].includes(auth.role.name)) {
+      return (
+        ["admin"].includes(user.role.name) && Promise.reject("Can't update")
+      );
     }
 
     Promise.resolve();
-  })
+  }),
 ];
 
 module.exports = user;

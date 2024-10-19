@@ -6,26 +6,6 @@ const bcrypt = require("bcrypt");
 const user = {};
 
 user.index = async (req, res, next) => {
-  // const paginate = (query, { page, pageSize }) => {
-  //   const offset = page * pageSize;
-  //   const limit = pageSize;
-
-  //   return {
-  //     ...query,
-  //     offset,
-  //     limit,
-  //   };
-  // };
-
-  // model.findAll(
-  //   paginate(
-  //     {
-  //       where: {}, // conditions
-  //     },
-  //     { page, pageSize },
-  //   ),
-  // );
-
   try {
     const users = await User.findAndCountAll();
 
@@ -80,6 +60,7 @@ user.index = async (req, res, next) => {
       from: usersQuery.length > 0 ? Number(offset + 1) : null,
       to: usersQuery.length > 0 ? Number(offset + usersQuery.length) : null,
       last_page: Number(pages),
+      search: search || "",
       result: usersQuery,
     });
   } catch (err) {
@@ -112,9 +93,7 @@ user.store = async (req, res, next) => {
 
 user.show = async (req, res, next) => {
   try {
-    const user = await User.findOne({
-      where: { id: req.params.id },
-    });
+    const user = await User.findOne({ where: { id: req.params.id } });
 
     return res.json({ user: user });
   } catch (err) {
@@ -133,10 +112,7 @@ user.update = async (req, res, next) => {
     };
 
     // check who is logged in
-    const auth = await User.findOne({
-      where: { email: req.email },
-      include: [{ model: Role, as: "role" }],
-    });
+    const auth = await User.findOne({ where: { email: req.email }, include: [{ model: Role, as: "role" }] });
 
     if (req.body.password == "" || req.body.password == null) {
       delete data["password"];
@@ -161,7 +137,17 @@ user.update = async (req, res, next) => {
 user.delete = async (req, res, next) => {
   try {
     const idsToDelete = req.params.id.split(",");
-    await User.destroy({ where: { id: { [Op.in]: idsToDelete } } });
+    const roleCheck = await User.findAll({ include: [{ model: Role, as: "role" }], where: { id: { [Op.in]: idsToDelete } } });
+
+    let rolearr = [];
+    roleCheck.map(async (role) => {
+      if (['user'].includes(role.role.name)) {
+        rolearr.push(role.id);
+      }
+    });
+
+    await User.destroy({ where: { id: { [Op.in]: rolearr } } });
+
     return res.json({ msg: "User deleted successfully" });
   } catch (err) {
     next(err);

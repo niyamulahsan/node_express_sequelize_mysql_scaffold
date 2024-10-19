@@ -46,6 +46,7 @@ example.index = async (req, res, next) => {
       from: exampleQuery.length > 0 ? Number(offset + 1) : null,
       to: exampleQuery.length > 0 ? Number(offset + exampleQuery.length) : null,
       last_page: Number(pages),
+      search: search || "",
       result: exampleQuery,
     });
   } catch (err) {
