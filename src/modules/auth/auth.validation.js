@@ -4,7 +4,13 @@ const { User } = require("../../models");
 const auth = {};
 
 auth.storeschema = [
-  check("email").notEmpty().withMessage("Email is required").bail().isEmail().withMessage("Invalid email"),
+  check("email").notEmpty().withMessage("Email is required").bail().isEmail().withMessage("Invalid email").custom(async (value) => {
+    const foundEmail = await User.findOne({ where: { id: req.params.id } });
+
+    if (foundEmail) {
+      return Promise.reject("Email already exists");
+    }
+  }),
   check("password").notEmpty().withMessage("Password is required"),
   check("confirm_password").notEmpty().withMessage("Confirm Password required").bail().custom((value, { req, res }) => {
     if (req.body.password !== value) {
