@@ -8,12 +8,12 @@ const cookieParser = require("cookie-parser");
 const serveIndex = require("serve-index");
 const morgan = require("morgan");
 const { swaggerServe, swaggerSetup } = require("./global/swaggerSetup");
-const db = require("./models");
+const db = require("./database/models");
 
 // internal import
 const {
-  notFoundHandler,
-  defaultErrorHandler,
+	notFoundHandler,
+	defaultErrorHandler,
 } = require("./middleware/errorhandler");
 const routes = require("./routes/index");
 
@@ -26,10 +26,10 @@ app.use(morgan("dev"));
 
 // cors issue setup
 app.use(
-  cors({
-    credentials: true,
-    origin: "*",
-  })
+	cors({
+		credentials: true,
+		origin: "*",
+	})
 );
 
 // cookie parser
@@ -37,9 +37,9 @@ app.use(cookieParser());
 
 // serve index
 app.use(
-  "/public",
-  express.static(path.join("/public")),
-  serveIndex(path.join(__dirname, "/public"), { icons: true })
+	"/public",
+	express.static(path.join("/public")),
+	serveIndex(path.join(__dirname, "/public"), { icons: true })
 );
 
 // upload file setup
@@ -50,9 +50,10 @@ app.use("/api-docs", swaggerServe, swaggerSetup);
 
 // rate limiter for api request
 const limiter = rateLimit({
-  max: 60,
-  windowMs: 60 * 1000,
-  message: "Too many request from this IP, please trye again after 1 minute later"
+	max: 60,
+	windowMs: 60 * 1000,
+	message:
+		"Too many request from this IP, please trye again after 1 minute later",
 });
 
 // router setup
@@ -60,7 +61,7 @@ app.use("/api", limiter, routes);
 
 // home route
 app.use("/", (req, res) => {
-  res.send("It's wrok...");
+	res.send("It's wrok...");
 });
 
 // // frontend technology linkup
@@ -76,10 +77,10 @@ app.use(defaultErrorHandler);
 
 // run server
 app.listen(process.env.PORT, () => {
-  db.sequelize.authenticate().then(() => {
-    console.log("Sequelize is running");
-  });
-  console.log(
-    `Server is running with ${process.env.PROTOCOL}://${process.env.HOST}:${process.env.PORT}`
-  );
+	db.sequelize.authenticate().then(() => {
+		console.log("Sequelize is running");
+	});
+	console.log(
+		`Server is running with ${process.env.PROTOCOL}://${process.env.HOST}:${process.env.PORT}`
+	);
 });
